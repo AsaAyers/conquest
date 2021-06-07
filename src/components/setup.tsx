@@ -35,7 +35,7 @@ export function Setup({ service }: SetupProps): JSX.Element {
           value={state.context.numPlanets}
           onChange={(e) => {
             console.log('NUM_PLANETS', Number(e.target.value));
-            send({ type: 'NUM_PLANETS', numPlanets: Number(e.target.value) });
+            send({ type: 'NUM_PLANETS', value: Number(e.target.value) });
           }}
         />
 
@@ -45,6 +45,8 @@ export function Setup({ service }: SetupProps): JSX.Element {
             <li
               key={i + name}
               className={styles.player}
+              onMouseOver={() => send({ type: 'SET_FOCUS', value: i })}
+              onMouseOut={() => send({ type: 'SET_FOCUS', value: undefined })}
               onClick={() =>
                 send({
                   type: 'EDIT_PLAYER',

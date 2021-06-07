@@ -14,6 +14,7 @@ export type GameContext = {
   galaxySize: number;
   numPlanets: number;
   players: Array<string>;
+  focus?: number;
   draftPlayer: {
     position?: number;
     name: string;
@@ -35,8 +36,9 @@ export type GameEvent =
   | { type: 'SHIPS_ARRIVED'; numShips: number; owner: number }
   | { type: 'SEND_SHIPS'; numShips: number }
   | { type: 'BUILD'; owner: Player }
-  | { type: 'GALAXY_SIZE'; value: number }
-  | { type: 'NUM_PLANETS'; numPlanets: number }
+  | { type: 'GALAXY_SIZE'; value: GameContext['galaxySize'] }
+  | { type: 'NUM_PLANETS'; value: GameContext['numPlanets'] }
+  | { type: 'SET_FOCUS'; value: GameContext['focus'] }
   | { type: 'REMOVE_PLAYER'; position: number }
   | { type: 'EDIT_PLAYER'; position: number }
   | { type: 'COMMIT_PLAYER' }

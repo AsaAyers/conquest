@@ -33,18 +33,21 @@ export const galaxyMachine = Machine<GameContext, GameEvent>(
       },
       setup: {
         on: {
+          SET_FOCUS: {
+            actions: { type: 'setter', key: 'focus' } ,
+          },
           GALAXY_SIZE: {
             target: 'generate',
-            actions: assign({
-              galaxySize: (context, event) => event.value,
-            }),
+            actions: [
+              { type: 'setter', key: 'galaxySize' }
+            ],
             cond: 'validGalaxySize',
           },
           NUM_PLANETS: {
             target: 'generate',
-            actions: assign({
-              numPlanets: (context, event) => event.numPlanets,
-            }),
+            actions: [
+              { type: 'setter', key: 'numPlanets' }
+            ],
             cond: 'validDensity',
           },
           EDIT_PLAYER: {
@@ -128,6 +131,14 @@ export const galaxyMachine = Machine<GameContext, GameEvent>(
   },
   {
     actions: {
+      setter: assign((context,event,meta) => {
+        if ('value' in event) {
+          return {
+            [meta.action.key]: event.value
+          }
+        }
+        return {}
+      }),
       commitPlayer: assign({
         players: (context) => {
           const tmp = [...context.players];
@@ -166,12 +177,6 @@ export const galaxyMachine = Machine<GameContext, GameEvent>(
             };
             if (planets[getAddressKey(planetCandidate.address)] == null) {
               planets[getAddressKey(planetCandidate.address)] = planetCandidate;
-              console.log(
-                getAddressKey(planetCandidate.address),
-                planetCandidate.id,
-                nameIndex,
-                planetNames[nameIndex],
-              );
               nameIndex++;
             }
           }
@@ -201,8 +206,8 @@ export const galaxyMachine = Machine<GameContext, GameEvent>(
     guards: {
       validDensity: (context, event) =>
         event.type === 'NUM_PLANETS' &&
-        event.numPlanets >= context.players.length * 2 &&
-        event.numPlanets <= planetNames.length,
+        event.value >= context.players.length * 2 &&
+        event.value <= planetNames.length,
       validGalaxySize: (context, event) =>
         event.type === 'GALAXY_SIZE' && event.value >= 10 && event.value <= 40,
       validPlayer: (context, event) =>

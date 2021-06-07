@@ -16,7 +16,7 @@
 
 .tile {
   position: relative;
-  border: 1px solid black;
+  outline: 1px solid black;
   color: white;
   font-weight: bolder;
 
@@ -34,7 +34,8 @@
 }
 
 .tile[data-owner] {
-  border-width: 5px;
+  outline-width: 5px;
+  outline-offset: -5px;
 }
 
 .tile[data-unclaimed]:before,
@@ -55,13 +56,17 @@
 }
 
 .tile[data-unclaimed] {
-  border-color: var(--color-unclaimed);
-  border-width: 1px;
+  outline-color: var(--color-unclaimed);
+  outline-width: 1px;
+}
+
+.tile[data-focus='false'][data-owner] {
+  outline-width: 0 !important;
 }
 
 @for $player from 0 through 5 {
   .tile[data-owner='#{$player}'] {
-    border-color: var(--color-player-#{$player});
+    outline-color: var(--color-player-#{$player});
   }
 }
 

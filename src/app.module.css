@@ -1,0 +1,22 @@
+.app {
+  height: 100vh;
+  text-align: center;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--gap);
+
+  max-width: 1024px;
+  margin: 0 auto;
+}
+
+.boardContainer {
+  display: flex;
+  align-content: center;
+  align-items: center;
+  justify-content: center;
+  padding-right: var(--gap);
+}
+
+.board {
+  width: 100%;
+}

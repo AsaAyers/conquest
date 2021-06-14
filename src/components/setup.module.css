@@ -35,10 +35,10 @@
   text-align: right;
 }
 
-label[for='galaxySize'] {
+label[for='sectorSize'] {
   grid-area: sizeLabel;
 }
-:global(#galaxySize) {
+:global(#sectorSize) {
   grid-area: size;
 }
 
@@ -85,4 +85,8 @@ label[htmlFor='draftPlayer'] {
   display: grid;
   grid-template-columns: min-content 1fr min-content;
   margin: 0.5em;
+}
+
+.start {
+  grid-area: start;
 }

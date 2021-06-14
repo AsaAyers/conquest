@@ -5,8 +5,24 @@
   grid-template-columns: repeat(2, 1fr);
   gap: var(--gap);
 
-  max-width: 1024px;
+  grid-template-areas:
+    'setupTab sectorTab'
+    'content content';
+  grid-template-rows:
+    min-content
+    auto;
+
   margin: 0 auto;
+}
+
+.setupTab {
+  grid-area: setupTab;
+}
+.sectorTab {
+  grid-area: sectorTab;
+}
+.content {
+  grid-area: content;
 }
 
 .boardContainer {

@@ -1,28 +1,24 @@
 import React from 'react';
-import { useService } from '@xstate/react';
 import styles from './setup.module.css';
-import type { GameInterpreter } from 'src/conquest-machine/Types';
 import { planetNames } from '../conquest-machine/planetNames';
 import classNames from 'classnames';
+import { useConquest } from '../conquest-machine';
 
-type SetupProps = {
-  service: GameInterpreter;
-};
-export function Setup({ service }: SetupProps): JSX.Element {
-  const [state, send] = useService(service);
+export function Setup(): JSX.Element {
+  const [state, send] = useConquest()
 
   return (
     <div className={styles.vertiacalCenter}>
       <div className={styles.setup}>
         <h1>Setup</h1>
 
-        <label htmlFor="galaxySize">Galaxy Size:</label>
+        <label htmlFor="sectorSize">sector Size:</label>
         <input
-          id="galaxySize"
+          id="sectorSize"
           type="number"
-          value={state.context.galaxySize}
+          value={state.context.sectorSize}
           onChange={(e) =>
-            send({ type: 'GALAXY_SIZE', value: Number(e.target.value) })
+            send({ type: 'sector_SIZE', value: Number(e.target.value) })
           }
         />
 
@@ -108,6 +104,14 @@ export function Setup({ service }: SetupProps): JSX.Element {
             {state.context.draftPlayer.position == null ? 'Add' : 'Update'}
           </button>
         </form>
+
+        <button
+          type="button"
+          className={styles.start}
+          onClick={() => send({ type: 'START' })}
+        >
+          Start Game
+        </button>
       </div>
     </div>
   );

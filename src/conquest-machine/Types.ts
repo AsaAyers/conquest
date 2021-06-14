@@ -1,4 +1,5 @@
-import type { Interpreter } from 'xstate';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import type { Interpreter, State } from 'xstate';
 
 export type Planet = {
   id: string;
@@ -9,9 +10,9 @@ export type Planet = {
   shipsPerRound: number;
 };
 
-export type GameContext = {
+export type SetupContext = {
   planets: Record<string, Planet>;
-  galaxySize: number;
+  sectorSize: number;
   numPlanets: number;
   players: Array<string>;
   focus?: number;
@@ -21,13 +22,18 @@ export type GameContext = {
   };
 };
 
+export type GameState = State<SetupContext, GameEvent, any, {
+    value: any;
+    context: SetupContext;
+}>
+
 export type GameInterpreter = Interpreter<
-  GameContext,
+  SetupContext,
   any,
   GameEvent,
   {
     value: any;
-    context: GameContext;
+    context: SetupContext;
   }
 >;
 type Player = string;
@@ -36,10 +42,11 @@ export type GameEvent =
   | { type: 'SHIPS_ARRIVED'; numShips: number; owner: number }
   | { type: 'SEND_SHIPS'; numShips: number }
   | { type: 'BUILD'; owner: Player }
-  | { type: 'GALAXY_SIZE'; value: GameContext['galaxySize'] }
-  | { type: 'NUM_PLANETS'; value: GameContext['numPlanets'] }
-  | { type: 'SET_FOCUS'; value: GameContext['focus'] }
+  | { type: 'sector_SIZE'; value: SetupContext['sectorSize'] }
+  | { type: 'NUM_PLANETS'; value: SetupContext['numPlanets'] }
+  | { type: 'SET_FOCUS'; value: SetupContext['focus'] }
   | { type: 'REMOVE_PLAYER'; position: number }
   | { type: 'EDIT_PLAYER'; position: number }
   | { type: 'COMMIT_PLAYER' }
+  | { type: 'START' }
   | { type: 'UPDATE_DRAFT'; name: string };

@@ -1,20 +1,15 @@
 import { assign, Machine, spawn } from 'xstate';
 import { createPlanetMachine } from './createPlanetMachine';
 import { planetNames } from './planetNames';
-import type { GameEvent, GameContext, Planet } from './Types';
+import type { GameEvent, SetupContext, Planet } from './Types';
+import { NUM_PLANET_ICONS, getAddressKey } from './index';
 
-const NUM_PLANET_ICONS = 18;
-
-export function getAddressKey(address: Planet['address']): string {
-  return `${address.x},${address.y}`;
-}
-
-export const galaxyMachine = Machine<GameContext, GameEvent>(
+export const sectorMachine = Machine<SetupContext, GameEvent>(
   {
-    id: 'galaxy',
+    id: 'sector',
     initial: 'generate',
     context: {
-      galaxySize: 10,
+      sectorSize: 10,
       numPlanets: 10,
       draftPlayer: {
         name: '',
@@ -27,21 +22,24 @@ export const galaxyMachine = Machine<GameContext, GameEvent>(
         always: [
           {
             target: 'setup',
-            actions: ['generateGalaxy'],
+            actions: ['generatesector'],
           },
         ],
       },
       setup: {
         on: {
-          SET_FOCUS: {
-            actions: { type: 'setter', key: 'focus' } ,
+          START: {
+            target: 'loading',
           },
-          GALAXY_SIZE: {
+          SET_FOCUS: {
+            actions: { type: 'setter', key: 'focus' },
+          },
+          sector_SIZE: {
             target: 'generate',
             actions: [
-              { type: 'setter', key: 'galaxySize' }
+              { type: 'setter', key: 'sectorSize' }
             ],
-            cond: 'validGalaxySize',
+            cond: 'validsectorSize',
           },
           NUM_PLANETS: {
             target: 'generate',
@@ -82,7 +80,7 @@ export const galaxyMachine = Machine<GameContext, GameEvent>(
                   return context.draftPlayer;
                 },
               }),
-              'generateGalaxy',
+              'generatesector',
             ],
           },
           COMMIT_PLAYER: {
@@ -91,7 +89,7 @@ export const galaxyMachine = Machine<GameContext, GameEvent>(
               'commitPlayer',
               {
                 cond: 'creatingNewPlayer',
-                type: 'generateGalaxy',
+                type: 'generatesector',
               },
               'clearDraft',
             ],
@@ -113,16 +111,15 @@ export const galaxyMachine = Machine<GameContext, GameEvent>(
 
       loading: {
         entry: assign({
-          planets: (context) =>
-            Object.fromEntries(
-              Object.entries(context.planets).map(([address, planet]) => [
-                address,
-                {
-                  ...planet,
-                  ref: spawn(createPlanetMachine(planet)),
-                },
-              ]),
-            ),
+          planets: (context) => Object.fromEntries(
+            Object.entries(context.planets).map(([address, planet]) => [
+              address,
+              {
+                ...planet,
+                ref: spawn(createPlanetMachine(planet)),
+              },
+            ])
+          ),
         }),
         always: 'ready',
       },
@@ -131,13 +128,13 @@ export const galaxyMachine = Machine<GameContext, GameEvent>(
   },
   {
     actions: {
-      setter: assign((context,event,meta) => {
+      setter: assign((context, event, meta) => {
         if ('value' in event) {
           return {
             [meta.action.key]: event.value
-          }
+          };
         }
-        return {}
+        return {};
       }),
       commitPlayer: assign({
         players: (context) => {
@@ -155,10 +152,9 @@ export const galaxyMachine = Machine<GameContext, GameEvent>(
         },
       }),
 
-      generateGalaxy: assign({
+      generatesector: assign({
         planets: (context) => {
-          const { numPlanets, galaxySize } = context;
-          const numTiles = galaxySize * galaxySize;
+          const { numPlanets, sectorSize } = context;
 
           let nameIndex = 0;
           const planets: Record<string, Planet> = {};
@@ -167,8 +163,8 @@ export const galaxyMachine = Machine<GameContext, GameEvent>(
             const planetCandidate: Planet = {
               id: planetNames[nameIndex],
               address: {
-                x: Math.floor(Math.random() * galaxySize),
-                y: Math.floor(Math.random() * galaxySize),
+                x: Math.floor(Math.random() * sectorSize),
+                y: Math.floor(Math.random() * sectorSize),
               },
               planet: 1 + Math.floor(Math.random() * NUM_PLANET_ICONS),
               owner: null,
@@ -181,12 +177,11 @@ export const galaxyMachine = Machine<GameContext, GameEvent>(
             }
           }
           const allPlanets = Object.values(planets).sort(
-            (a, b) => planetNames.indexOf(a.id) - planetNames.indexOf(b.id),
+            (a, b) => planetNames.indexOf(a.id) - planetNames.indexOf(b.id)
           );
           context.players.forEach((name, index) => {
             do {
-              let home =
-                allPlanets[Math.floor(Math.random() * allPlanets.length)];
+              let home = allPlanets[Math.floor(Math.random() * allPlanets.length)];
               home = allPlanets[index];
 
               if (home.owner != null) {
@@ -204,16 +199,12 @@ export const galaxyMachine = Machine<GameContext, GameEvent>(
       }),
     },
     guards: {
-      validDensity: (context, event) =>
-        event.type === 'NUM_PLANETS' &&
+      validDensity: (context, event) => event.type === 'NUM_PLANETS' &&
         event.value >= context.players.length * 2 &&
         event.value <= planetNames.length,
-      validGalaxySize: (context, event) =>
-        event.type === 'GALAXY_SIZE' && event.value >= 10 && event.value <= 40,
-      validPlayer: (context, event) =>
-        event.type === 'COMMIT_PLAYER' && context.draftPlayer.name.length > 0,
-      creatingNewPlayer: (context, event, wat) =>
-        context.draftPlayer.position == null,
+      validsectorSize: (context, event) => event.type === 'sector_SIZE' && event.value >= 10 && event.value <= 40,
+      validPlayer: (context, event) => event.type === 'COMMIT_PLAYER' && context.draftPlayer.name.length > 0,
+      creatingNewPlayer: (context) => context.draftPlayer.position == null,
     },
-  },
+  }
 );

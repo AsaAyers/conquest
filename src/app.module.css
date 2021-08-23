@@ -1,28 +1,8 @@
 .app {
-  height: 100vh;
+  height: 100%;
   text-align: center;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--gap);
-
-  grid-template-areas:
-    'setupTab sectorTab'
-    'content content';
-  grid-template-rows:
-    min-content
-    auto;
-
+  padding: 1em;
   margin: 0 auto;
-}
-
-.setupTab {
-  grid-area: setupTab;
-}
-.sectorTab {
-  grid-area: sectorTab;
-}
-.content {
-  grid-area: content;
 }
 
 .boardContainer {

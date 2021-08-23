@@ -18,18 +18,25 @@
   position: absolute;
   top: 100%;
   left: 0;
+  background-color: black;
+  padding: 0.5em;
 }
+.tile.active .tooltip,
 .tile:hover .tooltip {
   display: block;
 }
 
 .tile .planetName {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   z-index: 1;
 }
 
 .tile[data-owner] {
-  outline-width: 5px;
-  outline-offset: -5px;
+  outline-width: 2px;
+  outline-offset: -2px;
 }
 
 .tile[data-unclaimed]:before,
@@ -61,6 +68,9 @@
 @for $player from 0 through 5 {
   .tile[data-owner='#{$player}'] {
     outline-color: var(--color-player-#{$player});
+  }
+  .tile[data-owner='#{$player}'] .planetName {
+    color: var(--color-player-#{$player});
   }
 }
 

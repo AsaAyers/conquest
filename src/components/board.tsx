@@ -1,17 +1,17 @@
 import classNames from 'classnames';
 import React from 'react';
-import { getAddressKey, useConquest } from '../conquest-machine';
+import { useSelector } from 'react-redux';
+import { getAddressKey } from '../slices/generateSector';
+import { selectConfig, selectPlanetEntities } from '../slices/conquest';
 import styles from './board.module.scss';
 import { Tile } from './Tile';
 
 type BoardProps = {
   className?: string;
 };
-export function Board({
-  className,
-}: BoardProps): JSX.Element {
-  const [state] = useConquest()
-  const { planets, sectorSize } = state.context;
+export function Board({ className }: BoardProps): JSX.Element {
+  const planets = useSelector(selectPlanetEntities)
+  const { sectorSize } = useSelector(selectConfig)
 
   const tiles = React.useMemo(
     () =>
@@ -24,9 +24,6 @@ export function Board({
     [sectorSize],
   );
 
-  console.log('FOCUS',
-    state.context.focus)
-
   return (
     <div
       className={classNames(styles.board, className)}
@@ -36,11 +33,7 @@ export function Board({
       }}
     >
       {tiles.map(getAddressKey).map((key) => (
-        <Tile
-          key={key}
-          planet={planets[key]}
-          focus={state.context.focus}
-        />
+        <Tile key={key} planet={planets[key]} />
       ))}
     </div>
   );

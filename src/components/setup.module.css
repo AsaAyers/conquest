@@ -1,9 +1,11 @@
-.vertiacalCenter {
+.setupScreen {
   margin: auto;
 }
 
 .setup {
   display: grid;
+  grid-area: content;
+  gap: var(--gap);
   height: 100%;
 
   grid-template-columns: repeat(2, 1fr);
@@ -14,7 +16,9 @@
     'planetsLabel planets'
     'playersLabel players'
     'draftPlayerLabel draftPlayerForm'
-    'start start';
+    'start start'
+    'preview preview'
+    'regenerateSector regenerateSector';
 
   grid-template-rows:
     min-content
@@ -22,9 +26,18 @@
     min-content
     min-content
     min-content
-    auto;
+    min-content
+    auto
+    min-content;
 
   gap: var(--gap);
+}
+.preview {
+  grid-area: preview;
+}
+
+.regenerateSector {
+  grid-area: regenerateSector;
 }
 
 .setup h1 {
@@ -65,8 +78,8 @@ ul.playerList {
   list-style: none;
 }
 
-label[htmlFor='draftPlayer'] {
-  grid-area: draftPlayrLabel;
+label[for='draftPlayer'] {
+  grid-area: draftPlayerLabel;
 }
 .draftPlayerForm {
   grid-area: draftPlayerForm;

@@ -2,51 +2,81 @@ import React from 'react';
 import styles from './setup.module.css';
 import { planetNames } from '../conquest-machine/planetNames';
 import classNames from 'classnames';
-import { useConquest } from '../conquest-machine';
+import { useDispatch, useSelector } from 'react-redux';
+import { addPlayer, ready, regenerateSector, removePlayer, selectAllPlayers, selectConfig, selectPlanets, setNumPlanets, setSectorSize, updatePlayer } from '../slices/conquest';
+import type { Player } from '../types';
+import { Board } from './board';
 
+type DraftPlayer = {
+  id?: Player['id'],
+  position: number,
+  name: Player['name']
+  color: Player['color']
+}
 export function Setup(): JSX.Element {
-  const [state, send] = useConquest()
+  const dispatch = useDispatch()
+  const [, setFocus] = React.useState<number | undefined>()
+  const config = useSelector(selectConfig)
+  const players = useSelector(selectAllPlayers)
+  const planets = useSelector(selectPlanets)
+  const [tab, setTab] = React.useState<'setup' | 'preview'>('setup')
+
+  const numPlanets = planets.length
+
+  const [draftPlayer, setDraftPlayer] = React.useState<DraftPlayer>({
+    id: undefined,
+    position: 0,
+    name: '',
+    color: ''
+  })
 
   return (
-    <div className={styles.vertiacalCenter}>
-      <div className={styles.setup}>
-        <h1>Setup</h1>
+    <div className={styles.setupScreen}>
+      <h1>
+        Setup
+      </h1>
 
+      <div className={classNames(styles.setup)}>
         <label htmlFor="sectorSize">sector Size:</label>
         <input
           id="sectorSize"
           type="number"
-          value={state.context.sectorSize}
-          onChange={(e) =>
-            send({ type: 'sector_SIZE', value: Number(e.target.value) })
-          }
+          value={config.sectorSize}
+          onChange={(e) => {
+            dispatch(setSectorSize(Number(e.target.value)))
+          }}
         />
 
-        <label htmlFor="numPlanets">{state.context.numPlanets} Planets:</label>
+        <label htmlFor="numPlanets">{numPlanets} Planets:</label>
         <input
           type="range"
           id="numPlanets"
-          min={state.context.players.length * 2}
+          min={config.players.ids.length * 2}
           max={planetNames.length}
-          value={state.context.numPlanets}
+          value={planets.length}
           onChange={(e) => {
-            console.log('NUM_PLANETS', Number(e.target.value));
-            send({ type: 'NUM_PLANETS', value: Number(e.target.value) });
+            dispatch(setNumPlanets(Number(e.target.value)))
           }}
         />
 
         <label htmlFor="players">Players:</label>
         <ul id="players" className={styles.playerList}>
-          {state.context.players.map((name, i) => (
+          {players.map((player, i) => (
             <li
-              key={i + name}
+              key={i + player.name}
               className={styles.player}
-              onMouseOver={() => send({ type: 'SET_FOCUS', value: i })}
-              onMouseOut={() => send({ type: 'SET_FOCUS', value: undefined })}
+              onMouseOver={() => setFocus(i)}
+              onMouseOut={() => setFocus(undefined)}
               onClick={() =>
-                send({
-                  type: 'EDIT_PLAYER',
-                  position: i,
+
+                setDraftPlayer(() => {
+                  return {
+                    position: i,
+                    id: player.id,
+                    name: player.name,
+                    color: player.color,
+                  }
+
                 })
               }
             >
@@ -56,7 +86,7 @@ export function Setup(): JSX.Element {
                   color: `var(--color-player-${i})`,
                 }}
               />
-              <span>{name}</span>
+              <span>{player.name}</span>
               <i
                 style={{
                   color: `var(--color-player-${i})`,
@@ -64,10 +94,7 @@ export function Setup(): JSX.Element {
                 onClick={(e) => {
                   e.stopPropagation();
 
-                  send({
-                    type: 'REMOVE_PLAYER',
-                    position: i,
-                  });
+                  dispatch(removePlayer(player.id))
                 }}
                 className={classNames(styles.removeUser, 'fas fa-user-minus')}
               ></i>
@@ -76,8 +103,8 @@ export function Setup(): JSX.Element {
         </ul>
 
         <label htmlFor="draftPlayer">
-          {state.context.draftPlayer.position != null
-            ? `Player ${state.context.draftPlayer.position + 1}`
+          {draftPlayer.id != null
+            ? `Player ${draftPlayer.position}`
             : 'New Player'}
           :
         </label>
@@ -86,31 +113,68 @@ export function Setup(): JSX.Element {
           className={styles.draftPlayerForm}
           onSubmit={(e) => {
             e.preventDefault();
-            send({ type: 'COMMIT_PLAYER' });
+            if (draftPlayer.id == null) {
+
+              dispatch(addPlayer({
+                name: draftPlayer.name,
+                color: draftPlayer.color,
+              }))
+            } else {
+              dispatch(updatePlayer({
+                id: draftPlayer.id,
+                changes: {
+                  name: draftPlayer.name,
+                  color: draftPlayer.color,
+                }
+              }))
+            }
+
+            setDraftPlayer({
+              id: undefined,
+              position: 0,
+              name: '',
+              color: '',
+            })
+
           }}
         >
           <input
             type="text"
             id="draftPlayer"
-            value={state.context.draftPlayer.name}
-            onChange={(e) =>
-              send({
-                type: 'UPDATE_DRAFT',
-                name: e.target.value,
-              })
-            }
+            value={draftPlayer.name}
+            onChange={(e) => {
+              const name = e.target.value
+              console.log('name', name)
+              setDraftPlayer((draft) => ({
+                ...draft,
+                name,
+              }))
+            }}
           />
           <button type="submit">
-            {state.context.draftPlayer.position == null ? 'Add' : 'Update'}
+            {draftPlayer.id == null ? 'Add' : 'Update'}
           </button>
         </form>
 
         <button
           type="button"
           className={styles.start}
-          onClick={() => send({ type: 'START' })}
+          onClick={() => {
+            players.forEach((player) => {
+              dispatch(ready(player.id))
+            })
+          }}
         >
           Start Game
+        </button>
+
+        <Board className={styles.preview} />
+        <button
+          type="button"
+          className={styles.regenerateSector}
+          onClick={() => dispatch(regenerateSector())}
+        >
+          New Sector
         </button>
       </div>
     </div>

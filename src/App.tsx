@@ -7,7 +7,6 @@ import { selectMode } from './slices/game-slice';
 
 function App(): JSX.Element {
   const mode = useSelector(selectMode)
-  console.log({ mode })
 
   if (mode === 'setup') {
     return (

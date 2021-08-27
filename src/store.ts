@@ -19,7 +19,6 @@ export const store = configureStore({
 store.subscribe(() => {
   const state = store.getState()
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
-  console.log('save', state)
 })
 
 // Infer the `RootState` and `AppDispatch` types from the store itself

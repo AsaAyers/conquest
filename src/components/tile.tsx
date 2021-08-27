@@ -45,7 +45,6 @@ export function Tile({ address, planet, useTooltip }: TileProps): JSX.Element {
         return Boolean(planet)
       },
       drop(item) {
-        console.log('drop', item, '->', planet?.name)
 
         return undefined
       }
@@ -65,7 +64,6 @@ export function Tile({ address, planet, useTooltip }: TileProps): JSX.Element {
       data-unclaimed={planet && planet.owner == null ? true : undefined}
       onClick={() => {
         if (planet) {
-          console.log('activate', planetKey)
           dispatch(activatePlanet(planet))
         }
       }}

@@ -31,7 +31,6 @@ const playersSlice = createSlice({
   },
   extraReducers(builder) {
     builder.addCase(addPlayer, (state, action) => {
-      console.log('addPlayer?', action)
       playerAdapter.addOne(state, action.payload);
     });
   }

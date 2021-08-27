@@ -72,7 +72,6 @@ export const setupSlice = createSlice({
         state.sector = sectorReducer(state.sector, action);
         state.game = gameReducer(state.game, action);
         state.players = playerReducer(state.players, action);
-        console.log('players?', current(state.players));
       },
     );
 

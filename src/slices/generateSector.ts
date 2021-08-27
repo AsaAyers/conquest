@@ -74,7 +74,6 @@ export default function generateSector(
     }
   }
 
-  console.log('planets', planets)
   const allPlanets = Object.values(planets).sort(
     (a, b) => planetNames.indexOf(a.name) - planetNames.indexOf(b.name),
   );

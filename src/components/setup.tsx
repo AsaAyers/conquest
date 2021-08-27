@@ -149,7 +149,6 @@ export function Setup(): JSX.Element {
             value={draftPlayer.name}
             onChange={(e) => {
               const name = e.target.value
-              console.log('name', name)
               setDraftPlayer((draft) => ({
                 ...draft,
                 name,

@@ -2,7 +2,7 @@
 import * as React from 'react';
 import { configure, Queries, render, RenderResult, within } from '@testing-library/react';
 import { wrapWithTestBackend } from 'react-dnd-test-utils'
-import { assert, util } from 'chai';
+import { assert } from 'chai';
 import userEvent from '@testing-library/user-event'
 import App from './App';
 import { Provider } from 'react-redux';
@@ -21,6 +21,7 @@ const ui = {
   newUserInput: byLabelText<HTMLInputElement>(/New Player/),
   numPlanetsInput: byLabelText<HTMLInputElement>(/Planets:$/),
   planet: byTestId('planet'),
+  turnNumber: byLabelText<HTMLDivElement>('Turn'),
   sectorSizeInput: byLabelText<HTMLInputElement>(/Sector Size/),
   startGame: byRole<HTMLButtonElement>('button', { name: 'Start Game' }),
   userInfo: byTestId('user-info'),
@@ -32,7 +33,7 @@ configure({
   throwSuggestions: false,
 })
 
-function TestApp() {
+function AppWithStore() {
   const store = createStore()
   return (
     <React.StrictMode>
@@ -42,7 +43,7 @@ function TestApp() {
     </React.StrictMode>
   )
 }
-const [AppContext] = wrapWithTestBackend(TestApp)
+const [TestApp] = wrapWithTestBackend(AppWithStore)
 
 describe('Setup', () => {
   async function addPlayer<T extends Queries>(utils: RenderResult<T>, name: string) {
@@ -55,7 +56,7 @@ describe('Setup', () => {
   }
 
   it('New Player: A user can submit thier name', async () => {
-    const utils = render(<AppContext />);
+    const utils = render(<TestApp />);
 
     const myName = 'borg'
     await addPlayer(utils, myName)
@@ -68,6 +69,16 @@ describe('Setup', () => {
     })
     assert.isNotEmpty(me, 'New user not found')
   })
+
+  async function readTurnNumber() {
+    const tmp = await ui.turnNumber.find()
+    const match = tmp.textContent?.match(/\d+/)
+    if (!match) {
+      throw new Error('Unable to read turn number')
+    }
+
+    return Number(match[0])
+  }
 
   async function readBoard() {
     const board = await ui.board.find()
@@ -87,21 +98,22 @@ describe('Setup', () => {
   }
 
   it('The sector is regenerated when a player is added', async () => {
-    const utils = render(<AppContext />);
+    const utils = render(<TestApp />);
 
     const boardBefore = await readBoard()
     await addPlayer(utils, 'cylons')
 
     const boardAfter = await readBoard()
 
-    assert(
-      boardBefore.boardFingerprint !== boardAfter.boardFingerprint,
-      'All the planets are in the same order'
+    assert.notEqual(
+      boardBefore.boardFingerprint,
+      boardAfter.boardFingerprint,
+      'boardFingerprint'
     )
   })
 
   it('Sector: Changing the sector size changes the number of tiles', async () => {
-    render(<AppContext />);
+    render(<TestApp />);
 
     userEvent.click(await ui.customBoard.find())
 
@@ -115,13 +127,10 @@ describe('Setup', () => {
 
     const board = await readBoard()
 
-    assert(
-      board.sectorSize === value,
-      'Changing the sector size should update the board'
-    )
+    assert.equal(board.sectorSize, value, 'sectorSize')
   })
   it('NumPlanets: changing the number of planets is reflected in the game board', async () => {
-    render(<AppContext />);
+    render(<TestApp />);
     const value = 15
 
     userEvent.click(await ui.customBoard.find())
@@ -131,30 +140,21 @@ describe('Setup', () => {
     )
 
     const { numPlanets } = await readBoard()
-    assert(
-      numPlanets === value,
-      `Expected ${value} planets, found ${numPlanets}`
-    )
+    assert.equal(numPlanets, value, `numPlanets`)
   })
   it('Start button is disabled until there are at least 2 players', async () => {
-    const utils = render(<AppContext />);
+    const utils = render(<TestApp />);
 
     const startButton = await ui.startGame.find()
-    assert(
-      startButton.disabled,
-      'Start button should be disabled when there are no users'
-    )
+    assert.isTrue(startButton.disabled, 'startButton disabled')
 
     await addPlayer(utils, 'cylons')
     await addPlayer(utils, 'borg')
 
-    assert(
-      !startButton.disabled,
-      'Start button should be disabled when there are no users'
-    )
+    assert.isFalse(startButton.disabled, 'startButton disabled')
   })
   it('Clicking new sector shows a new game board', async () => {
-    render(<AppContext />);
+    render(<TestApp />);
 
     const boardBefore = await readBoard()
     userEvent.click(
@@ -162,15 +162,38 @@ describe('Setup', () => {
     )
     const boardAfter = await readBoard()
 
-    assert(
-      boardBefore.boardFingerprint !== boardAfter.boardFingerprint,
-      'All the planets are in the same order'
+    assert.notEqual(
+      boardBefore.boardFingerprint,
+      boardAfter.boardFingerprint,
+      'boardFingerprint'
     )
   })
   it(
     `Local Play: 3 player names can be entered, then start the game
     The game boardtransfers to the new screen
-    `
+    `,
+    async () => {
+      const utils = render(<TestApp />);
+
+      await addPlayer(utils, 'A')
+      await addPlayer(utils, 'B')
+      await addPlayer(utils, 'C')
+
+      const boardSnapshot = await readBoard()
+      userEvent.click(
+        ui.startGame.get()
+      )
+
+      assert.equal(await readTurnNumber(), 0, 'turn number')
+
+      const after = await readBoard()
+
+      assert.equal(
+        boardSnapshot.boardFingerprint,
+        after.boardFingerprint,
+        'boardFingerprint'
+      )
+    }
   )
 
   describe('Error conditions', () => {

@@ -13,8 +13,8 @@ export default function Game(): JSX.Element {
 
   return (
     <div className={styles.game}>
-      <span className={styles.turn}>
-        Turn {turnNumber}
+      <span className={styles.turn} aria-labelledby="turnNumber">
+        <span id='turnNumber'>Turn</span> {turnNumber}
       </span>
       <ul className={styles.players} data-testid='user-list'>
         {players.map((player, i) => (

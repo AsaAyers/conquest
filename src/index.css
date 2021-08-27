@@ -6,6 +6,7 @@
   --color-player-3: #7ec8e3;
   --color-player-4: #ff8300;
 
+  --color-selected: red;
   --gap: 1.5em;
 }
 body {

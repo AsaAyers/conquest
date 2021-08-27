@@ -1,24 +1,25 @@
 import { configureStore } from '@reduxjs/toolkit';
-import reducer from './slices/conquest'
+import rootReducer from './slices/root-slice'
+
+const STORAGE_KEY = 'gameSave'
 
 let preloadedState = undefined
 
 try {
-  preloadedState = JSON.parse(String(localStorage.getItem('gameSave')))
+  preloadedState = JSON.parse(String(localStorage.getItem(STORAGE_KEY)))
 } catch (e) {
   // do nothing
 }
 
-console.log(preloadedState)
-
 export const store = configureStore({
-  reducer,
+  reducer: rootReducer,
   preloadedState: preloadedState ? preloadedState : undefined,
 });
 
 store.subscribe(() => {
   const state = store.getState()
-  localStorage.setItem('gameSave', JSON.stringify(state))
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+  console.log('save', state)
 })
 
 // Infer the `RootState` and `AppDispatch` types from the store itself

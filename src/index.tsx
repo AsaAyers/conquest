@@ -4,11 +4,15 @@ import App from './App';
 import { store } from './store';
 import { Provider } from 'react-redux';
 import './index.css';
+import { DndProvider } from 'react-dnd';
+import { TouchBackend } from 'react-dnd-touch-backend';
 
 ReactDOM.render(
   <React.StrictMode>
     <Provider store={store}>
-      <App />
+      <DndProvider backend={TouchBackend}>
+        <App />
+      </DndProvider>
     </Provider>
   </React.StrictMode>,
   document.getElementById('root'),

@@ -1,0 +1,79 @@
+.newFlight {
+  display: grid;
+  grid-template-areas:
+    'header header header'
+    'fromLabel from .'
+    'shipsLabel ships total'
+    'toLabel to .'
+    'distanceLabel distance .'
+    '. save .';
+}
+
+.header {
+  grid-area: header;
+}
+
+.total {
+  grid-area: total;
+}
+
+.clear {
+  grid-area: clear;
+}
+
+.newFlight {
+  &:not(.showSave) {
+    .save {
+      display: none;
+    }
+  }
+  .save {
+    grid-area: save;
+  }
+
+  label[for='from'] {
+    grid-area: fromLabel;
+  }
+  :global(#from) {
+    grid-area: from;
+  }
+
+  &:not(.showShips) {
+    label[for='ships'],
+    :global(#ships) {
+      display: none;
+    }
+  }
+  label[for='ships'] {
+    grid-area: shipsLabel;
+  }
+  :global(#ships) {
+    grid-area: ships;
+  }
+
+  &:not(.showTo) {
+    label[for='to'],
+    :global(#to) {
+      display: none;
+    }
+  }
+  label[for='to'] {
+    grid-area: toLabel;
+  }
+  :global(#to) {
+    grid-area: to;
+  }
+
+  &:not(.showDistance) {
+    label[for='distance'],
+    :global(#distance) {
+      display: none;
+    }
+  }
+  label[for='distance'] {
+    grid-area: distanceLabel;
+  }
+  :global(#distance) {
+    grid-area: distance;
+  }
+}

@@ -1,6 +1,6 @@
 .tile {
   position: relative;
-  outline: 1px solid black;
+  outline: 0px solid black;
   color: white;
   font-weight: bolder;
 
@@ -79,4 +79,13 @@
   .tile[data-planet='#{$i}']:before {
     background-image: url('assets/planet' + $i + '.png');
   }
+}
+
+.tile.x {
+  outline-color: var(--color-selected);
+  outline-width: 1px;
+}
+.tile.y {
+  outline-color: var(--color-selected);
+  outline-width: 1px;
 }

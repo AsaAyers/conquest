@@ -16,9 +16,7 @@ export type Flight = {
 };
 
 export type GameState = {
-  sector: Array<Planet>;
   turnNumber: number;
-  players: Array<Player>;
   playersTurn: number;
   schedules: Array<Schedule>;
 };

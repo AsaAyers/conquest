@@ -1,0 +1,36 @@
+.game {
+  display: grid;
+  grid-template-areas:
+    'turn players'
+    'board board'
+    'log newFlight';
+}
+
+.turn {
+  grid-area: turn;
+}
+
+.players {
+  grid-area: players;
+}
+
+@for $player from 0 through 5 {
+  .player-#{$player} {
+    color: var(--color-player-#{$player});
+  }
+}
+.activePlayer {
+  border: 1px solid var(--color-selected);
+}
+
+.board {
+  grid-area: board;
+}
+
+.log {
+  grid-area: log;
+}
+
+.newFlight {
+  grid-area: newFlight;
+}

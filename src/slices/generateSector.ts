@@ -5,6 +5,17 @@ export function getAddressKey(address: Planet['address']): string {
   return `${address.x},${address.y}`;
 }
 
+export function getDistance(a: Planet['address'], b: Planet['address']): number {
+  const aSquared = Math.pow(Math.abs(a.x - b.x), 2)
+  const bSquared = Math.pow(Math.abs(a.y - b.y), 2)
+
+  // Round up because it's a number of turns
+  return Math.ceil(
+    Math.sqrt(aSquared + bSquared)
+  )
+
+}
+
 export const NUM_PLANET_ICONS = 18;
 
 export const planetNames: EntityId[] = [
@@ -42,11 +53,10 @@ export default function generateSector(
   playerIds: Array<Player['id']>
 ): Record<EntityId, Planet> {
   let nameIndex = 0;
-  const planets: Record<Planet['id'], Planet> = {};
+  const planets: Record<string, Planet> = {};
 
   while (Object.values(planets).length < numPlanets) {
     const planetCandidate: Planet = {
-      id: planetNames[nameIndex],
       name: String(planetNames[nameIndex]),
       combatModifier: 1,
       address: {
@@ -66,7 +76,7 @@ export default function generateSector(
 
   console.log('planets', planets)
   const allPlanets = Object.values(planets).sort(
-    (a, b) => planetNames.indexOf(a.id) - planetNames.indexOf(b.id),
+    (a, b) => planetNames.indexOf(a.name) - planetNames.indexOf(b.name),
   );
   playerIds.forEach((playerId) => {
     let home

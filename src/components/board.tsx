@@ -2,14 +2,15 @@ import classNames from 'classnames';
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { getAddressKey } from '../slices/generateSector';
-import { selectConfig, selectPlanetEntities } from '../slices/conquest';
+import { selectConfig, selectPlanetEntities } from '../slices/root-slice';
 import styles from './board.module.scss';
-import { Tile } from './Tile';
+import { Tile } from './tile';
 
 type BoardProps = {
   className?: string;
+  useTooltip?: boolean
 };
-export function Board({ className }: BoardProps): JSX.Element {
+export function Board({ className, useTooltip }: BoardProps): JSX.Element {
   const planets = useSelector(selectPlanetEntities)
   const { sectorSize } = useSelector(selectConfig)
 
@@ -32,9 +33,10 @@ export function Board({ className }: BoardProps): JSX.Element {
         gridTemplateRows: `repeat(${sectorSize}, 1fr)`,
       }}
     >
-      {tiles.map(getAddressKey).map((key) => (
-        <Tile key={key} planet={planets[key]} />
-      ))}
+      {tiles.map((address) => {
+        const key = getAddressKey(address)
+        return <Tile key={key} address={address} planet={planets[key]} useTooltip={useTooltip} />
+      })}
     </div>
   );
 }

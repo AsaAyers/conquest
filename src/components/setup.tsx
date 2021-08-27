@@ -1,11 +1,13 @@
 import React from 'react';
 import styles from './setup.module.css';
-import { planetNames } from '../conquest-machine/planetNames';
+import { planetNames } from '../planetNames';
 import classNames from 'classnames';
 import { useDispatch, useSelector } from 'react-redux';
-import { addPlayer, ready, regenerateSector, removePlayer, selectAllPlayers, selectConfig, selectPlanets, setNumPlanets, setSectorSize, updatePlayer } from '../slices/conquest';
+import { regenerateSector, selectConfig, selectAllPlanets, setNumPlanets, setSectorSize, activatePlanet } from '../slices/root-slice';
 import type { Player } from '../types';
 import { Board } from './board';
+import { startGame } from '../slices/game-slice';
+import { addPlayer, removePlayer, selectAllPlayers, updatePlayer } from '../slices/players-slice';
 
 type DraftPlayer = {
   id?: Player['id'],
@@ -18,8 +20,7 @@ export function Setup(): JSX.Element {
   const [, setFocus] = React.useState<number | undefined>()
   const config = useSelector(selectConfig)
   const players = useSelector(selectAllPlayers)
-  const planets = useSelector(selectPlanets)
-  const [tab, setTab] = React.useState<'setup' | 'preview'>('setup')
+  const planets = useSelector(selectAllPlanets)
 
   const numPlanets = planets.length
 
@@ -67,7 +68,11 @@ export function Setup(): JSX.Element {
               className={styles.player}
               onMouseOver={() => setFocus(i)}
               onMouseOut={() => setFocus(undefined)}
-              onClick={() =>
+              onClick={() => {
+                const home = planets.find(planet => planet.owner === player.id)
+                if (home) {
+                  dispatch(activatePlanet(home))
+                }
 
                 setDraftPlayer(() => {
                   return {
@@ -78,7 +83,7 @@ export function Setup(): JSX.Element {
                   }
 
                 })
-              }
+              }}
             >
               <i
                 className={classNames('fas fa-edit', styles.editIcon)}
@@ -160,15 +165,13 @@ export function Setup(): JSX.Element {
           type="button"
           className={styles.start}
           onClick={() => {
-            players.forEach((player) => {
-              dispatch(ready(player.id))
-            })
+            dispatch(startGame())
           }}
         >
           Start Game
         </button>
 
-        <Board className={styles.preview} />
+        <Board useTooltip={true} className={styles.preview} />
         <button
           type="button"
           className={styles.regenerateSector}

@@ -1,14 +1,27 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import * as React from 'react';
-import { render } from '@testing-library/react';
+import { Queries, render, RenderResult, within } from '@testing-library/react';
 import { wrapWithTestBackend } from 'react-dnd-test-utils'
-// import { expect } from 'chai';
+import { assert } from 'chai';
+import userEvent from '@testing-library/user-event'
 import App from './App';
 import { Provider } from 'react-redux';
 import { store } from './store';
+import { byLabelText, byRole, byTestId } from 'testing-library-selector'
 
 const MAX_DENSITY = 50
 const MAX_SECTOR_SIZE = 25
+
+const ui = {
+  newUserInput: byLabelText<HTMLInputElement>(/New Player/),
+  addUserButton: byRole('button', { name: 'Submit' }),
+  userList: byTestId('user-list'),
+  sectorInput: byLabelText<HTMLInputElement>(/Sector Size/),
+  numPlanetsInput: byLabelText<HTMLInputElement>(/Planets:$/),
+
+  userInfo: byTestId('user-info')
+}
+
 
 function TestApp() {
   return (
@@ -21,16 +34,28 @@ function TestApp() {
 }
 
 describe('Setup', () => {
-  // it('renders learn react link', () => {
-  //   const { getByText } = render(<App />);
-  //   const linkElement = getByText(/learn react/i);
-  //   expect(document.body.contains(linkElement));
-  // });
+  async function addPlayer<T extends Queries>(utils: RenderResult<T>, name: string) {
+    userEvent.type(await ui.newUserInput.find(), name)
+    userEvent.click(await ui.addUserButton.find())
+    assert.isEmpty(
+      (await ui.newUserInput.find()).value
+    )
+  }
 
-  it('New Player: A user can submit thier name', () => {
-    const [AppContext, getBackend] = wrapWithTestBackend(TestApp)
+  it('New Player: A user can submit thier name', async () => {
+    const [AppContext] = wrapWithTestBackend(TestApp)
     const utils = render(<AppContext />);
-    utils.findByLabelText('New Player')
+
+    const myName = 'borg'
+    addPlayer(utils, myName)
+
+    const allUsers = await ui.userInfo.findAll(
+      await ui.userList.find()
+    )
+    const me = allUsers.filter((context) => {
+      within(context).queryByText(myName)
+    })
+    assert.isNotEmpty(me, 'New user not found')
   })
 
   it('The sector is regenerated when a player is added')

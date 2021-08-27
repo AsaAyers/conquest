@@ -28,6 +28,8 @@ export function Board({ className, useTooltip }: BoardProps): JSX.Element {
   return (
     <div
       className={classNames(styles.board, className)}
+      data-testid='board'
+      data-sector-size={sectorSize}
       style={{
         gridTemplateColumns: `repeat(${sectorSize}, 1fr)`,
         gridTemplateRows: `repeat(${sectorSize}, 1fr)`,

@@ -2,7 +2,7 @@
 import * as React from 'react';
 import { configure, Queries, render, RenderResult, within } from '@testing-library/react';
 import { wrapWithTestBackend } from 'react-dnd-test-utils'
-import { assert } from 'chai';
+import { assert, expect } from 'chai';
 import userEvent from '@testing-library/user-event'
 import App from './App';
 import { Provider } from 'react-redux';
@@ -18,8 +18,9 @@ const ui = {
   userList: byTestId('user-list'),
   sectorInput: byLabelText<HTMLInputElement>(/Sector Size/),
   numPlanetsInput: byLabelText<HTMLInputElement>(/Planets:$/),
-
-  userInfo: byTestId('user-info')
+  userInfo: byTestId('user-info'),
+  board: byTestId('board'),
+  planet: byTestId('planet')
 }
 
 configure({
@@ -37,6 +38,7 @@ function TestApp() {
     </React.StrictMode>
   )
 }
+const [AppContext] = wrapWithTestBackend(TestApp)
 
 describe('Setup', () => {
   async function addPlayer<T extends Queries>(utils: RenderResult<T>, name: string) {
@@ -49,7 +51,6 @@ describe('Setup', () => {
   }
 
   it('New Player: A user can submit thier name', async () => {
-    const [AppContext] = wrapWithTestBackend(TestApp)
     const utils = render(<AppContext />);
 
     const myName = 'borg'
@@ -64,7 +65,36 @@ describe('Setup', () => {
     assert.isNotEmpty(me, 'New user not found')
   })
 
-  it('The sector is regenerated when a player is added')
+  async function readBoard() {
+    const board = await ui.board.find()
+
+    const planets = await ui.planet.findAll(board)
+
+    const sectorSize = board.dataset.sectorSize
+    const numPlanets = planets.length
+    const planetNames = planets.map(el => el.dataset.name)
+
+    return {
+      numPlanets,
+      planetNames,
+      sectorSize,
+    }
+  }
+
+  it('The sector is regenerated when a player is added', async () => {
+    const utils = render(<AppContext />);
+
+    const boardBefore = await readBoard()
+    await addPlayer(utils, 'cylons')
+
+    const boardAfter = await readBoard()
+
+    assert(
+      boardBefore.planetNames.join(' ') !== boardAfter.planetNames.join(' '),
+      'All the planets are in the same order'
+    )
+
+  })
 
   it('Sector: Changing the sector size changes the number of tiles', () => {
 

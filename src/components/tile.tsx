@@ -71,6 +71,8 @@ export function Tile({ address, planet, useTooltip }: TileProps): JSX.Element {
       {planet && (
         <span
           ref={dragRef}
+          data-testid="planet"
+          data-name={planet.name}
           className={styles.planetName}>
           {useTooltip && <Tooltip planet={planet} owner={owner} />}
         </span>

@@ -1,0 +1,136 @@
+.setupScreen {
+  margin: auto;
+
+  .setup {
+    display: grid;
+    grid-area: content;
+    gap: var(--gap);
+    height: 100%;
+
+    grid-template-columns: repeat(2, 1fr);
+    /* TIL: Every row MUST have the same numer of items */
+    grid-template-areas:
+      'setupHeader setupHeader'
+      'playersLabel players'
+      'draftPlayerLabel draftPlayerForm'
+      'start start'
+      'preview preview'
+      'regenerateSector showAdvanced';
+
+    grid-template-rows:
+      min-content
+      min-content
+      min-content
+      min-content
+      auto
+      min-content;
+
+    gap: var(--gap);
+  }
+  &.showAdvanced .setup {
+    grid-template-areas:
+      'setupHeader setupHeader'
+      'sizeLabel size'
+      'planetsLabel planets'
+      'playersLabel players'
+      'draftPlayerLabel draftPlayerForm'
+      'start start'
+      'preview preview'
+      'regenerateSector showAdvanced';
+
+    grid-template-rows:
+      min-content
+      min-content
+      min-content
+      min-content
+      min-content
+      min-content
+      auto
+      min-content;
+  }
+
+  .customBoard {
+    grid-area: showAdvanced;
+  }
+
+  .preview {
+    grid-area: preview;
+  }
+
+  .regenerateSector {
+    grid-area: regenerateSector;
+  }
+
+  .setup h1 {
+    grid-area: setupHeader;
+  }
+
+  .setup label {
+    text-align: right;
+  }
+
+  &:not(.showAdvanced) {
+    label[for='numPlanets'],
+    :global(#numPlanets),
+    label[for='sectorSize'],
+    :global(#sectorSize) {
+      display: none;
+      visibility: hidden;
+    }
+  }
+  label[for='sectorSize'] {
+    grid-area: sizeLabel;
+  }
+  :global(#sectorSize) {
+    grid-area: size;
+  }
+
+  label[for='numPlanets'] {
+    grid-area: planetsLabel;
+  }
+  :global(#numPlanets) {
+    grid-area: planets;
+  }
+
+  label[for='players'] {
+    grid-area: playersLabel;
+  }
+  :global(#players) {
+    grid-area: players;
+  }
+
+  ul.playerList {
+    text-align: left;
+    background-color: white;
+    color: black;
+    grid-area: players;
+
+    list-style: none;
+  }
+
+  label[for='draftPlayer'] {
+    grid-area: draftPlayerLabel;
+  }
+  .draftPlayerForm {
+    grid-area: draftPlayerForm;
+    display: grid;
+    grid-template-columns: auto min-content;
+  }
+
+  .playerList .editIcon {
+    display: inline-block;
+    width: 1em;
+    margin-left: -1em;
+    margin-right: 0.5em;
+  }
+
+  .playerList .player {
+    display: grid;
+    grid-template-columns: min-content 1fr min-content;
+    margin: 0.5em;
+  }
+
+  .start {
+    grid-area: start;
+  }
+}

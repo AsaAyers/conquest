@@ -44,7 +44,7 @@ export function Tile({ address, planet, useTooltip }: TileProps): JSX.Element {
 
         return Boolean(planet)
       },
-      drop(item) {
+      drop(_item) {
 
         return undefined
       }

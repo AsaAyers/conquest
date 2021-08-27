@@ -2,12 +2,13 @@
 import * as React from 'react';
 import { configure, Queries, render, RenderResult, within } from '@testing-library/react';
 import { wrapWithTestBackend } from 'react-dnd-test-utils'
-import { assert, expect } from 'chai';
+import { assert } from 'chai';
 import userEvent from '@testing-library/user-event'
 import App from './App';
 import { Provider } from 'react-redux';
 import { createStore } from './store';
 import { byLabelText, byRole, byTestId } from 'testing-library-selector'
+import { fireEvent } from '@testing-library/dom';
 
 const MAX_DENSITY = 50
 const MAX_SECTOR_SIZE = 25
@@ -16,7 +17,9 @@ const ui = {
   newUserInput: byLabelText<HTMLInputElement>(/New Player/),
   addUserButton: byRole('button', { name: 'Add' }),
   userList: byTestId('user-list'),
-  sectorInput: byLabelText<HTMLInputElement>(/Sector Size/),
+  newSector: byRole('button', { name: 'New Sector' }),
+  customBoard: byRole('button', { name: 'Custom Board' }),
+  sectorSizeInput: byLabelText<HTMLInputElement>(/Sector Size/),
   numPlanetsInput: byLabelText<HTMLInputElement>(/Planets:$/),
   userInfo: byTestId('user-info'),
   board: byTestId('board'),
@@ -70,7 +73,7 @@ describe('Setup', () => {
 
     const planets = await ui.planet.findAll(board)
 
-    const sectorSize = board.dataset.sectorSize
+    const sectorSize = Number(board.dataset.sectorSize)
     const numPlanets = planets.length
     const planetNames = planets.map(el => el.dataset.name)
 
@@ -96,8 +99,25 @@ describe('Setup', () => {
 
   })
 
-  it('Sector: Changing the sector size changes the number of tiles', () => {
+  it('Sector: Changing the sector size changes the number of tiles', async () => {
+    render(<AppContext />);
 
+    userEvent.click(await ui.customBoard.find())
+
+    const value = 10
+    fireEvent.change(
+      await ui.sectorSizeInput.find(),
+      {
+        target: { value }
+      }
+    )
+
+    const board = await readBoard()
+
+    assert(
+      board.sectorSize === value,
+      'Changing the sector size should update the board'
+    )
   })
   it('NumPlanets: changing the number of planets is reflected in the game board')
   it('Start button is disabled until there are at least 2 players')

@@ -16,7 +16,7 @@ export default function Game(): JSX.Element {
       <span className={styles.turn}>
         Turn {turnNumber}
       </span>
-      <ul className={styles.players}>
+      <ul className={styles.players} data-testid='user-list'>
         {players.map((player, i) => (
           <li key={player.id} className={classNames(styles[`player-${i}`], {
             [styles.activePlayer]: i === playersTurn

@@ -61,10 +61,11 @@ export function Setup(): JSX.Element {
         />
 
         <label htmlFor="players">Players:</label>
-        <ul id="players" className={styles.playerList}>
+        <ul id="players" className={styles.playerList} data-testid='user-list'>
           {players.map((player, i) => (
             <li
               key={i + player.name}
+              data-testid='user-info'
               className={styles.player}
               onMouseOver={() => setFocus(i)}
               onMouseOut={() => setFocus(undefined)}
@@ -155,9 +156,13 @@ export function Setup(): JSX.Element {
               }))
             }}
           />
-          <button type="submit">
-            {draftPlayer.id == null ? 'Add' : 'Update'}
-          </button>
+          <input
+            type="submit"
+            role="button"
+            name="Submit"
+            value={draftPlayer.id == null ? 'Add' : 'Update'}
+          />
+
         </form>
 
         <button

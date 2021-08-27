@@ -11,10 +11,17 @@ try {
   // do nothing
 }
 
-export const store = configureStore({
-  reducer: rootReducer,
-  preloadedState: preloadedState ? preloadedState : undefined,
-});
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export const createStore = (preloadedState?: RootState | undefined) => {
+  return configureStore({
+    reducer: rootReducer,
+    preloadedState,
+  });
+}
+
+export const store = createStore(
+  preloadedState ? preloadedState : undefined,
+)
 
 store.subscribe(() => {
   const state = store.getState()
@@ -22,7 +29,7 @@ store.subscribe(() => {
 })
 
 // Infer the `RootState` and `AppDispatch` types from the store itself
-export type RootState = ReturnType<typeof store.getState>;
+export type RootState = ReturnType<typeof rootReducer>;
 
 declare module 'react-redux' {
   interface DefaultRootState extends RootState {

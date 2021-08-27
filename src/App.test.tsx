@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import * as React from 'react';
-import { Queries, render, RenderResult, within } from '@testing-library/react';
+import { configure, Queries, render, RenderResult, within } from '@testing-library/react';
 import { wrapWithTestBackend } from 'react-dnd-test-utils'
 import { assert } from 'chai';
 import userEvent from '@testing-library/user-event'
 import App from './App';
 import { Provider } from 'react-redux';
-import { store } from './store';
+import { createStore } from './store';
 import { byLabelText, byRole, byTestId } from 'testing-library-selector'
 
 const MAX_DENSITY = 50
@@ -14,7 +14,7 @@ const MAX_SECTOR_SIZE = 25
 
 const ui = {
   newUserInput: byLabelText<HTMLInputElement>(/New Player/),
-  addUserButton: byRole('button', { name: 'Submit' }),
+  addUserButton: byRole('button', { name: 'Add' }),
   userList: byTestId('user-list'),
   sectorInput: byLabelText<HTMLInputElement>(/Sector Size/),
   numPlanetsInput: byLabelText<HTMLInputElement>(/Planets:$/),
@@ -22,8 +22,13 @@ const ui = {
   userInfo: byTestId('user-info')
 }
 
+configure({
+  showOriginalStackTrace: true,
+  throwSuggestions: false,
+})
 
 function TestApp() {
+  const store = createStore()
   return (
     <React.StrictMode>
       <Provider store={store}>
@@ -38,7 +43,8 @@ describe('Setup', () => {
     userEvent.type(await ui.newUserInput.find(), name)
     userEvent.click(await ui.addUserButton.find())
     assert.isEmpty(
-      (await ui.newUserInput.find()).value
+      (await ui.newUserInput.find()).value,
+      'The input did not clear when adding user'
     )
   }
 
@@ -47,13 +53,13 @@ describe('Setup', () => {
     const utils = render(<AppContext />);
 
     const myName = 'borg'
-    addPlayer(utils, myName)
+    await addPlayer(utils, myName)
 
     const allUsers = await ui.userInfo.findAll(
       await ui.userList.find()
     )
     const me = allUsers.filter((context) => {
-      within(context).queryByText(myName)
+      return within(context).queryByText(myName, { normalizer: (name) => name.trim() })
     })
     assert.isNotEmpty(me, 'New user not found')
   })

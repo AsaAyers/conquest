@@ -142,6 +142,7 @@ export function Setup(): JSX.Element {
         <button
           type="button"
           className={styles.start}
+          disabled={players.length < 2}
           onClick={() => {
             dispatch(startGame())
           }}

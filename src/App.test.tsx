@@ -2,7 +2,7 @@
 import * as React from 'react';
 import { configure, Queries, render, RenderResult, within } from '@testing-library/react';
 import { wrapWithTestBackend } from 'react-dnd-test-utils'
-import { assert } from 'chai';
+import { assert, util } from 'chai';
 import userEvent from '@testing-library/user-event'
 import App from './App';
 import { Provider } from 'react-redux';
@@ -14,16 +14,17 @@ const MAX_DENSITY = 50
 const MAX_SECTOR_SIZE = 25
 
 const ui = {
-  newUserInput: byLabelText<HTMLInputElement>(/New Player/),
   addUserButton: byRole('button', { name: 'Add' }),
-  userList: byTestId('user-list'),
-  newSector: byRole('button', { name: 'New Sector' }),
-  customBoard: byRole('button', { name: 'Custom Board' }),
-  sectorSizeInput: byLabelText<HTMLInputElement>(/Sector Size/),
-  numPlanetsInput: byLabelText<HTMLInputElement>(/Planets:$/),
-  userInfo: byTestId('user-info'),
   board: byTestId('board'),
-  planet: byTestId('planet')
+  customBoard: byRole('button', { name: 'Custom Board' }),
+  newSector: byRole('button', { name: 'New Sector' }),
+  newUserInput: byLabelText<HTMLInputElement>(/New Player/),
+  numPlanetsInput: byLabelText<HTMLInputElement>(/Planets:$/),
+  planet: byTestId('planet'),
+  sectorSizeInput: byLabelText<HTMLInputElement>(/Sector Size/),
+  startGame: byRole<HTMLButtonElement>('button', { name: 'Start Game' }),
+  userInfo: byTestId('user-info'),
+  userList: byTestId('user-list'),
 }
 
 configure({
@@ -46,9 +47,9 @@ const [AppContext] = wrapWithTestBackend(TestApp)
 describe('Setup', () => {
   async function addPlayer<T extends Queries>(utils: RenderResult<T>, name: string) {
     userEvent.type(await ui.newUserInput.find(), name)
-    userEvent.click(await ui.addUserButton.find())
+    userEvent.click(ui.addUserButton.get())
     assert.isEmpty(
-      (await ui.newUserInput.find()).value,
+      ui.newUserInput.get().value,
       'The input did not clear when adding user'
     )
   }
@@ -59,7 +60,7 @@ describe('Setup', () => {
     const myName = 'borg'
     await addPlayer(utils, myName)
 
-    const allUsers = await ui.userInfo.findAll(
+    const allUsers = ui.userInfo.getAll(
       await ui.userList.find()
     )
     const me = allUsers.filter((context) => {
@@ -81,6 +82,7 @@ describe('Setup', () => {
       numPlanets,
       planetNames,
       sectorSize,
+      boardFingerprint: `${sectorSize}:${numPlanets}\n${planetNames.join(' ')}`
     }
   }
 
@@ -93,10 +95,9 @@ describe('Setup', () => {
     const boardAfter = await readBoard()
 
     assert(
-      boardBefore.planetNames.join(' ') !== boardAfter.planetNames.join(' '),
+      boardBefore.boardFingerprint !== boardAfter.boardFingerprint,
       'All the planets are in the same order'
     )
-
   })
 
   it('Sector: Changing the sector size changes the number of tiles', async () => {
@@ -119,9 +120,53 @@ describe('Setup', () => {
       'Changing the sector size should update the board'
     )
   })
-  it('NumPlanets: changing the number of planets is reflected in the game board')
-  it('Start button is disabled until there are at least 2 players')
-  it('Clicking new sector shows a new game board')
+  it('NumPlanets: changing the number of planets is reflected in the game board', async () => {
+    render(<AppContext />);
+    const value = 15
+
+    userEvent.click(await ui.customBoard.find())
+    fireEvent.change(
+      await ui.numPlanetsInput.find(),
+      { target: { value } }
+    )
+
+    const { numPlanets } = await readBoard()
+    assert(
+      numPlanets === value,
+      `Expected ${value} planets, found ${numPlanets}`
+    )
+  })
+  it('Start button is disabled until there are at least 2 players', async () => {
+    const utils = render(<AppContext />);
+
+    const startButton = await ui.startGame.find()
+    assert(
+      startButton.disabled,
+      'Start button should be disabled when there are no users'
+    )
+
+    await addPlayer(utils, 'cylons')
+    await addPlayer(utils, 'borg')
+
+    assert(
+      !startButton.disabled,
+      'Start button should be disabled when there are no users'
+    )
+  })
+  it('Clicking new sector shows a new game board', async () => {
+    render(<AppContext />);
+
+    const boardBefore = await readBoard()
+    userEvent.click(
+      await ui.newSector.find()
+    )
+    const boardAfter = await readBoard()
+
+    assert(
+      boardBefore.boardFingerprint !== boardAfter.boardFingerprint,
+      'All the planets are in the same order'
+    )
+  })
   it(
     `Local Play: 3 player names can be entered, then start the game
     The game boardtransfers to the new screen
